@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  api:
+    image: nhatpun/credit-risk-api:latest
+    deploy:
+      replicas: 1
+      placement:
+        constraints: 
+          - node.labels.type == API
+    ports:
+      - 8000:8000
+    volumes:
+      - model_data:/app/models
+
+  app:
+    image: nhatpun/credit-risk-app:latest
+    deploy:
+      replicas: 2
+      placement:
+        constraints: 
+          - node.labels.type == TRAINER
+    ports:
+      - 8501:8501
+    environment:
+      - API_URL=http://192.168.99.110:8000/
+    depends_on:
+      - api
+
+volumes:
+  model_data:

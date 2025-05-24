@@ -1,0 +1,15 @@
+# Data processing
+pandas==2.2.2
+numpy==1.26.4
+
+# Visualization
+matplotlib==3.9.1
+seaborn==0.13.2
+plotly==6.0.1
+
+# UI
+streamlit==1.37.0
+requests==2.32.3
+
+# Utils
+python-dotenv==1.0.1

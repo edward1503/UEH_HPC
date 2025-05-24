@@ -1,23 +1,53 @@
 version: '3.8'
 
 services:
+  # API Service
   api:
-    build: .
-    image: credit-default-prediction:latest
-    deploy:
-      replicas: 3
-      update_config:
-        parallelism: 1
-        delay: 10s
-      restart_policy:
-        condition: on-failure
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    image: "nhatpun/credit-risk-api:latest"
     ports:
       - "8000:8000"
     volumes:
-      - ./model/saved_models:/app/model/saved_models
+      - ./models:/app/models
+    environment:
+      - MODEL_DIR=/app/models
+      - DEBUG=true
+    deploy:
     networks:
-      - credit-network
+      - credit-risk-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    #
+
+  # Streamlit App
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+    image: "nhatpun/credit-risk-app:latest"
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
+      - DEBUG=true
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    networks:
+      - credit-risk-network
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
 
 networks:
-  credit-network:
-    driver: overlay 
+  credit-risk-network:
+    driver: bridge 
